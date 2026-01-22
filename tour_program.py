@@ -80,13 +80,18 @@ def generate_pdf(dataframe):
         # Date
         pdf.cell(col_widths["Date"], row_height, str(row["Date"]), border=1, align="C")
         # Time
-        time_str = str(row.get("Time", ""))
-        if pd.notna(row.get("Time")) and row.get("Time") != "":
+        time_value = row.get("Time", "")
+        time_str = ""
+        if pd.notna(time_value) and time_value != "":
             # Format time if it's a time object
-            if isinstance(row.get("Time"), datetime.time):
-                time_str = row.get("Time").strftime("%H:%M")
+            if isinstance(time_value, datetime.time):
+                time_str = time_value.strftime("%H:%M")
             else:
-                time_str = str(row.get("Time"))[:5]
+                # Try to convert string to time format, fallback to empty if fails
+                try:
+                    time_str = str(time_value)[:5]  # Extract HH:MM from time string
+                except:
+                    time_str = ""
         pdf.cell(col_widths["Time"], row_height, time_str, border=1, align="C")
         # Day
         pdf.cell(col_widths["Day"], row_height, str(row["Day"]), border=1, align="C")
