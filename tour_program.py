@@ -46,6 +46,7 @@ def generate_pdf(dataframe):
     epw = pdf.w - 2 * pdf.l_margin
     
     # Define column ratios (must sum to 1.0 or 100%)
+    # Total: 0.07+0.05+0.06+0.11+0.10+0.29+0.12+0.20 = 1.00
     col_ratios = {
         "Date": 0.07,
         "Time": 0.05,
@@ -100,7 +101,7 @@ def generate_pdf(dataframe):
         pdf.cell(col_widths["Day"], row_height, str(row["Day"]), border=1, align="C")
         # Category
         pdf.cell(col_widths["Category"], row_height, str(row["Category"])[:20], border=1, align="C")
-        # Ownership
+        # Ownership - Using full text since values are predefined and short (max 16 chars)
         ownership_text = str(row.get("Ownership", "Private"))
         pdf.cell(col_widths["Ownership"], row_height, ownership_text, border=1, align="C")
         
