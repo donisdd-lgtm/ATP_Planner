@@ -47,10 +47,11 @@ def generate_pdf(dataframe):
     # Define column ratios (must sum to 1.0 or 100%)
     col_ratios = {
         "Date": 0.08,
-        "Day": 0.08,
-        "Category": 0.15,
-        "Address": 0.35,
-        "Section": 0.14,
+        "Time": 0.06,
+        "Day": 0.07,
+        "Category": 0.13,
+        "Address": 0.33,
+        "Section": 0.13,
         "Remarks": 0.20
     }
     
@@ -62,6 +63,7 @@ def generate_pdf(dataframe):
     row_height = 8
     header_specs = [
         ("Date", "Date"),
+        ("Time", "Time"),
         ("Day", "Day"),
         ("Category", "Category"),
         ("Address", "Name & Address of the Installation"),
@@ -77,6 +79,15 @@ def generate_pdf(dataframe):
     for idx, row in dataframe.iterrows():
         # Date
         pdf.cell(col_widths["Date"], row_height, str(row["Date"]), border=1, align="C")
+        # Time
+        time_str = str(row.get("Time", ""))
+        if pd.notna(row.get("Time")) and row.get("Time") != "":
+            # Format time if it's a time object
+            if isinstance(row.get("Time"), datetime.time):
+                time_str = row.get("Time").strftime("%H:%M")
+            else:
+                time_str = str(row.get("Time"))[:5]
+        pdf.cell(col_widths["Time"], row_height, time_str, border=1, align="C")
         # Day
         pdf.cell(col_widths["Day"], row_height, str(row["Day"]), border=1, align="C")
         # Category
@@ -116,7 +127,7 @@ st.set_page_config(
 # Initialize session state for the DataFrame
 if 'tour_data' not in st.session_state:
     st.session_state.tour_data = pd.DataFrame(
-        columns=["Date", "Day", "Place of Inspection", "Address", "Category", "Electrical Section", "Remarks"]
+        columns=["Date", "Time", "Day", "Place of Inspection", "Address", "Category", "Electrical Section", "Remarks"]
     )
 
 # Display title header
@@ -149,6 +160,12 @@ with st.sidebar:
         entry_date = st.date_input(
             "Date",
             value=datetime.date.today()
+        )
+        
+        # Time Input
+        entry_time = st.time_input(
+            "Time of Inspection",
+            value=datetime.time(9, 0)  # Default to 9:00 AM
         )
         
         # Category Selectbox
@@ -205,6 +222,7 @@ with st.sidebar:
                 # Create new entry as a dictionary
                 new_entry = {
                     "Date": entry_date,
+                    "Time": entry_time,
                     "Day": day_name,
                     "Place of Inspection": place_of_inspection,
                     "Address": address,
