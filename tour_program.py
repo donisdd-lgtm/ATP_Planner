@@ -101,7 +101,7 @@ def generate_pdf(dataframe):
         # Category
         pdf.cell(col_widths["Category"], row_height, str(row["Category"])[:20], border=1, align="C")
         # Ownership
-        ownership_text = str(row.get("Ownership", "Private"))[:15]
+        ownership_text = str(row.get("Ownership", "Private"))
         pdf.cell(col_widths["Ownership"], row_height, ownership_text, border=1, align="C")
         
         # Address - with text wrapping using multi_cell
@@ -211,11 +211,6 @@ with st.sidebar:
         if submit_button:
             # Validation checks
             validation_passed = True
-            
-            # Validate ownership field is selected
-            if not ownership:
-                st.error("❌ Ownership is required!")
-                validation_passed = False
             
             # Check if date already exists in DataFrame
             if len(st.session_state.tour_data) > 0:
