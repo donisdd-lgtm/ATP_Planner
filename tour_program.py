@@ -11,6 +11,7 @@ DESIGNATION = "Assistant Electrical Inspector"
 OFFICE_NAME = "Office of the Electrical Inspector"
 OFFICE_ADDRESS = "Palakkad"
 PEN = "833631"
+DEFAULT_OWNERSHIP = "Private"  # Default ownership type: "Government-owned" or "Private"
 # ===========================================================
 
 # Function to generate PDF
@@ -46,12 +47,13 @@ def generate_pdf(dataframe):
     
     # Define column ratios (must sum to 1.0 or 100%)
     col_ratios = {
-        "Date": 0.08,
-        "Time": 0.06,
-        "Day": 0.07,
-        "Category": 0.13,
-        "Address": 0.33,
-        "Section": 0.13,
+        "Date": 0.07,
+        "Time": 0.05,
+        "Day": 0.06,
+        "Category": 0.11,
+        "Ownership": 0.10,
+        "Address": 0.29,
+        "Section": 0.12,
         "Remarks": 0.20
     }
     
@@ -66,6 +68,7 @@ def generate_pdf(dataframe):
         ("Time", "Time"),
         ("Day", "Day"),
         ("Category", "Category"),
+        ("Ownership", "Ownership"),
         ("Address", "Name & Address of the Installation"),
         ("Section", "Section"),
         ("Remarks", "Remarks"),
@@ -97,6 +100,9 @@ def generate_pdf(dataframe):
         pdf.cell(col_widths["Day"], row_height, str(row["Day"]), border=1, align="C")
         # Category
         pdf.cell(col_widths["Category"], row_height, str(row["Category"])[:20], border=1, align="C")
+        # Ownership
+        ownership_text = str(row.get("Ownership", "Private"))[:15]
+        pdf.cell(col_widths["Ownership"], row_height, ownership_text, border=1, align="C")
         
         # Address - with text wrapping using multi_cell
         x = pdf.get_x()
@@ -132,7 +138,7 @@ st.set_page_config(
 # Initialize session state for the DataFrame
 if 'tour_data' not in st.session_state:
     st.session_state.tour_data = pd.DataFrame(
-        columns=["Date", "Time", "Day", "Place of Inspection", "Address", "Category", "Electrical Section", "Remarks"]
+        columns=["Date", "Time", "Day", "Place of Inspection", "Address", "Category", "Ownership", "Electrical Section", "Remarks"]
     )
 
 # Display title header
@@ -179,6 +185,14 @@ with st.sidebar:
             options=['HT Installation', 'EHT Installation', 'Non HT installations', 'MV Installations', 'Lift Inspection', 'AC Check at AC Cinema halls', 'Quality control inspections', 'X-Ray/Neon', 'Office Work', 'Leave']
         )
         
+        # Ownership Selectbox (REQUIRED)
+        ownership = st.selectbox(
+            "Ownership *",
+            options=['Government-owned', 'Private'],
+            index=0 if DEFAULT_OWNERSHIP == 'Government-owned' else 1,
+            help="Select the ownership type of the installation (required)"
+        )
+        
         # Name & Address of the Installation
         address = st.text_area("Name & Address of the Installation")
         
@@ -197,6 +211,11 @@ with st.sidebar:
         if submit_button:
             # Validation checks
             validation_passed = True
+            
+            # Validate ownership field is selected
+            if not ownership:
+                st.error("❌ Ownership is required!")
+                validation_passed = False
             
             # Check if date already exists in DataFrame
             if len(st.session_state.tour_data) > 0:
@@ -232,6 +251,7 @@ with st.sidebar:
                     "Place of Inspection": place_of_inspection,
                     "Address": address,
                     "Category": category,
+                    "Ownership": ownership,
                     "Electrical Section": electrical_section,
                     "Remarks": remarks
                 }
